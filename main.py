@@ -12,7 +12,9 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from DHCPClient import DHCPClient
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG,
+					format="%(asctime)s %(levelname)-8s %(message)s",
+					datefmt='%Y-%m-%d %H:%M:%S')
 log = logging.getLogger("FGD2DNS")
 
 fortigateIP = "10.0.1.1"
@@ -157,6 +159,11 @@ def generateNewDNS(dhcpList, oldDNSList):
 					log.warn("Skipping duplciate hostname (new): %s %s",d.hostname, d.ip)
 		else:
 			log.info("Skipping DHCP entry %s: missing hostname"%(d.ip))
+			oldEntry = DNSEntry.containsIP(d.ip, oldDNSList)
+			if oldEntry is not None:
+				log.info("Removing DNS entry as DHCP has no hostname")
+				del oldDNSList[oldDNSList.index(oldEntry)]
+
 
 	# append any old DNS entries that haven't been updated
 	for d in oldDNSList:
